@@ -1,68 +1,71 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const CompressionPlugin = require('compression-webpack-plugin')
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const CompressionPlugin = require("compression-webpack-plugin");
 
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-  mode: 'development',
+  mode: "development",
   entry: {
-    app: path.resolve(__dirname, 'harness/index.tsx'),
-    childApp: path.resolve(__dirname, 'src/index.tsx')
+    app: path.resolve(__dirname, "harness/index.tsx"),
+    childApp: path.resolve(__dirname, "src/index.tsx"),
   },
   output: {
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, "dist"),
   },
   devServer: {
     hot: true,
-    port: 8080
+    port: 8080,
+    // fix for 'Invalid Host Header' message
+    compress: true,
+    disableHostCheck: true, // That solved it
   },
-  devtool: 'inline-source-map',
+  devtool: "inline-source-map",
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.css', '.json'],
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".css", ".json"],
   },
   optimization: {
-    runtimeChunk: 'single'
+    runtimeChunk: "single",
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './harness/index.html',
-      filename: './index.html',
-      chunks: ['app'],
+      template: "./harness/index.html",
+      filename: "./index.html",
+      chunks: ["app"],
       minify: {
         html5: true,
         collapseWhitespace: true,
         removeComments: true,
-        removeEmptyAttributes: true
-      }
+        removeEmptyAttributes: true,
+      },
     }),
     new HtmlWebpackPlugin({
-      template: './src/index.html',
-      filename: './childApp.html',
-      chunks: ['childApp'],
+      template: "./src/index.html",
+      filename: "./childApp.html",
+      chunks: ["childApp"],
       minify: {
         html5: true,
         collapseWhitespace: true,
         removeComments: true,
-        removeEmptyAttributes: true
-      }
+        removeEmptyAttributes: true,
+      },
     }),
     new CleanWebpackPlugin(),
     // ensure paths are cased correctly even on windows machines
     new CaseSensitivePathsPlugin(),
     // create css files for build (different loaders in webpack.dev.js and webpack.prod.js)
     new MiniCssExtractPlugin({
-      filename: '[name].[hash].css',
-      chunkFilename: '[id].[hash].css'
+      filename: "[name].[hash].css",
+      chunkFilename: "[id].[hash].css",
     }),
     // run ts type checker in a separate process for faster builds
     new ForkTsCheckerWebpackPlugin(),
 
     // compression output bundles for file size
-    new CompressionPlugin()
+    new CompressionPlugin(),
   ],
   module: {
     rules: [
@@ -71,28 +74,28 @@ module.exports = {
         test: [/\.jsx?$/],
         exclude: /node_modules/,
         resolve: {
-          extensions: ['.js', 'jsx']
+          extensions: [".js", "jsx"],
         },
         use: {
-          loader: 'babel-loader',
-        }
+          loader: "babel-loader",
+        },
       },
       // transpile ts and tsx to esnext then to es5 with babel
       {
         test: /\.tsx?$/,
         use: [
           {
-           loader: 'babel-loader',
-           options: {
-             cacheDirectory: true
-           }
+            loader: "babel-loader",
+            options: {
+              cacheDirectory: true,
+            },
           },
           {
-            loader: 'ts-loader',
+            loader: "ts-loader",
             options: {
-              transpileOnly: true
+              transpileOnly: true,
             },
-          }
+          },
         ],
         exclude: /node_modules/,
       },
@@ -100,14 +103,14 @@ module.exports = {
       {
         test: /\.(png|svg|jpg|gif)$/,
         // exclude: /(?!node_modules\/@ayx)(node_modules)/,
-        use: ['file-loader']
+        use: ["file-loader"],
       },
       // handle fonts
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
         // exclude: /(?!node_modules\/@ayx)(node_modules)/,
-        use: ['file-loader']
-      }
-    ]
+        use: ["file-loader"],
+      },
+    ],
   },
 };
